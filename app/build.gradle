@@ -31,4 +31,8 @@ dependencies {
 
     // For developers using AndroidX in their applications
     implementation 'pub.devrel:easypermissions:3.0.0'
+
+    def dispatcher_version = "4.6.0"
+    implementation "org.permissionsdispatcher:permissionsdispatcher:$dispatcher_version"
+    annotationProcessor "org.permissionsdispatcher:permissionsdispatcher-processor:$dispatcher_version"
 }

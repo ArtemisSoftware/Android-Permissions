@@ -18,10 +18,17 @@ import com.ramotion.circlemenu.CircleMenuView;
 
 import java.util.List;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
+@RuntimePermissions
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks{
 
     private int STORAGE_PERMISSION_CODE = 1;
@@ -72,6 +79,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         openCamera();
                         break;
 
+                    case 2:
+                        MainActivityPermissionsDispatcher.toastWriteWithPermissionCheck(MainActivity.this);
+                        break;
+
                     default:
                         break;
 
@@ -96,6 +107,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
     }
+
+    //-----------------
+    //Storage
+    //-----------------
 
     private void checkPermission() {
 
@@ -134,6 +149,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
 
+    //------------------
+    //Easy permission
+    //------------------
+
+
     @AfterPermissionGranted(REQUEST_CODE)
     private void openCamera() {
         String[] perms = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
@@ -146,13 +166,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-    }
 
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
@@ -174,4 +187,55 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         }
     }
+
+    //----------------
+    //Dispatcher
+    //----------------
+
+    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    void toastWrite() {
+        Toast.makeText(this, "Permission to write", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+        //EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+
+    @OnShowRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    void showRationaleForCamera(final PermissionRequest request) {
+        new AlertDialog.Builder(this)
+                .setTitle("Permission needed")
+                .setMessage("This permission is needed because of this and  that")
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        request.proceed();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        request.cancel();
+                    }
+                })
+                .show();
+    }
+
+
+    @OnPermissionDenied(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    void onCameraDenied() {
+        Toast.makeText(this, "Write Permission denied", Toast.LENGTH_SHORT).show();
+    }
+
+    @OnNeverAskAgain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    void onNeverAskAgain() {
+        Toast.makeText(this, "Write Permission Never asking again", Toast.LENGTH_SHORT).show();
+    }
+
+
+
 }
