@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.ramotion.circlemenu.CircleMenuView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import permissions.dispatcher.NeedsPermission;
@@ -33,11 +34,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private int STORAGE_PERMISSION_CODE = 1;
     private final int REQUEST_CODE = 123;
+    public static final int REQUEST_PERMISSION_MULTIPLE = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        checkPermissions();
 
         final CircleMenuView menu = findViewById(R.id.circle_menu);
         menu.setEventListener(new CircleMenuView.EventListener() {
@@ -81,6 +85,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     case 2:
                         MainActivityPermissionsDispatcher.toastWriteWithPermissionCheck(MainActivity.this);
+                        break;
+
+                    case 3:
+                        checkPermissions();
                         break;
 
                     default:
@@ -234,6 +242,66 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @OnNeverAskAgain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     void onNeverAskAgain() {
         Toast.makeText(this, "Write Permission Never asking again", Toast.LENGTH_SHORT).show();
+    }
+
+
+    //-------------------
+    //
+    //-------------------
+
+    private boolean checkPermissions() {
+
+        int permissionReadExternal = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        int permissionCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        int permissionLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        int permissionWriteExternal = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        List<String> listPermissionsNeeded = new ArrayList<>();
+
+
+        if (permissionReadExternal != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                Toast.makeText(this, "Read Permission is required for this app to run", Toast.LENGTH_SHORT).show();
+            }
+            listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+
+        // Camera Permission
+        if (permissionCamera != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+                Toast.makeText(this, "Camera Permission is required for this app to run", Toast.LENGTH_SHORT).show();
+            }
+            listPermissionsNeeded.add(Manifest.permission.CAMERA);
+        }
+
+        // Read/Write Permission
+        if (permissionWriteExternal != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(this, "Read/Write Permission is required for this app to run", Toast.LENGTH_SHORT).show();
+            }
+            listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+
+        // Location Permission
+        if (permissionLocation != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                Toast.makeText(this, "Location Permission is required for this app to run", Toast.LENGTH_SHORT).show();
+            }
+            listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        if (!listPermissionsNeeded.isEmpty()) {
+            //ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), REQUEST_PERMISSION_MULTIPLE);
+            Toast.makeText(this, listPermissionsNeeded.size() + " Permissions needed", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        Toast.makeText(this, "All Permissions are given", Toast.LENGTH_SHORT).show();
+        return true;
     }
 
 

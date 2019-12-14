@@ -4,7 +4,7 @@
         <item>@drawable/ic_sd_storage_24dp</item>
         <item>@drawable/ic_camera_alt_black_24dp</item>
         <item>@drawable/ic_insert_24dp</item>
-        <!--<item>@drawable/ic_settings_white_24dp</item>-->
+        <item>@drawable/ic_check_box_black_24dp</item>
         <!--<item>@drawable/ic_place_white_24dp</item>-->
     </array>
     <array name="colors">
